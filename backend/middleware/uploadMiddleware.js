@@ -2,27 +2,42 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadDirectory = "uploads/";
+// ==========================================
+// UPLOAD DIRECTORY
+// ==========================================
 
-if (!fs.existsSync(uploadDirectory)) {
-  fs.mkdirSync(uploadDirectory, { recursive: true });
+const uploadDir = "uploads";
+
+// Create uploads folder if it doesn't exist
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, {
+    recursive: true,
+  });
 }
+
+// ==========================================
+// STORAGE
+// ==========================================
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDirectory);
+    cb(null, uploadDir);
   },
 
   filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname);
+    const uniqueName =
+      Date.now() +
+      "-" +
+      Math.round(Math.random() * 1e9) +
+      path.extname(file.originalname);
 
-    const fileName = `${Date.now()}-${Math.round(
-      Math.random() * 1e9,
-    )}${extension}`;
-
-    cb(null, fileName);
+    cb(null, uniqueName);
   },
 });
+
+// ==========================================
+// FILE FILTER
+// ==========================================
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -30,9 +45,13 @@ const fileFilter = (req, file, cb) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only JPG, JPEG, PNG and WEBP images are allowed"));
+    cb(new Error("Only JPG, PNG and WebP images are allowed"), false);
   }
 };
+
+// ==========================================
+// MULTER
+// ==========================================
 
 const upload = multer({
   storage,

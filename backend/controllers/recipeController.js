@@ -1,9 +1,7 @@
 import Recipe from "../models/Recipe.js";
-import User from "../models/User.js";
 
-// ==========================================
 // CREATE RECIPE
-// ==========================================
+
 const createRecipe = async (req, res) => {
   try {
     const {
@@ -66,11 +64,9 @@ const createRecipe = async (req, res) => {
   }
 };
 
-
-// ==========================================
 // GET RECIPES
 // SEARCH + CATEGORY + PAGINATION
-// ==========================================
+
 const getRecipes = async (req, res) => {
   try {
     const { search, category, page = 1, limit = 10 } = req.query;
@@ -141,9 +137,8 @@ const getRecipes = async (req, res) => {
   }
 };
 
-// ==========================================
 // GET SINGLE RECIPE
-// ==========================================
+
 const getRecipeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -171,17 +166,31 @@ const getRecipeById = async (req, res) => {
   }
 };
 
-// ==========================================
 // UPDATE RECIPE
-// ==========================================
+
 const updateRecipe = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const { title, description, ingredients, steps, category, image } =
-      req.body;
+    // SAFETY CHECK
+    if (!req.body) {
+      return res.status(400).json({
+        message: "Request body is missing.",
+      });
+    }
 
-    // Find recipe
+    const {
+      title,
+      description,
+      ingredients,
+      steps,
+      category,
+    } = req.body;
+
+    console.log("UPDATE RECIPE BODY:", req.body);
+    console.log("UPDATE RECIPE FILE:", req.file);
+
+    // FIND RECIPE
     const recipe = await Recipe.findById(id);
 
     if (!recipe) {
@@ -190,23 +199,87 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // Check recipe owner
-    if (recipe.createdBy.toString() !== req.user._id.toString()) {
+    // CHECK RECIPE OWNER
+    if (
+      recipe.createdBy.toString() !==
+      req.user._id.toString()
+    ) {
       return res.status(403).json({
         message: "You can only update your own recipe",
       });
     }
 
-    // Update fields
-    recipe.title = title ?? recipe.title;
-    recipe.description = description ?? recipe.description;
-    recipe.ingredients = ingredients ?? recipe.ingredients;
-    recipe.steps = steps ?? recipe.steps;
-    recipe.category = category ?? recipe.category;
-    recipe.image = image ?? recipe.image;
+    // VALIDATE REQUIRED FIELDS
+    if (!title || !title.trim()) {
+      return res.status(400).json({
+        message: "Recipe title is required",
+      });
+    }
 
+    if (!description || !description.trim()) {
+      return res.status(400).json({
+        message: "Recipe description is required",
+      });
+    }
+
+    if (!category || !category.trim()) {
+      return res.status(400).json({
+        message: "Recipe category is required",
+      });
+    }
+
+    // CONVERT INGREDIENTS TO ARRAY
+    let ingredientsArray = recipe.ingredients;
+
+    if (ingredients !== undefined) {
+      if (Array.isArray(ingredients)) {
+        ingredientsArray = ingredients
+          .map((item) => String(item).trim())
+          .filter(Boolean);
+      } else if (typeof ingredients === "string") {
+        ingredientsArray = ingredients
+          .split(/\r?\n/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    // CONVERT STEPS TO ARRAY
+    let stepsArray = recipe.steps;
+
+    if (steps !== undefined) {
+      if (Array.isArray(steps)) {
+        stepsArray = steps
+          .map((item) => String(item).trim())
+          .filter(Boolean);
+      } else if (typeof steps === "string") {
+        stepsArray = steps
+          .split(/\r?\n/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    // UPDATE TEXT FIELDS
+    recipe.title = title.trim();
+
+    recipe.description = description.trim();
+
+    recipe.ingredients = ingredientsArray;
+
+    recipe.steps = stepsArray;
+
+    recipe.category = category.trim();
+
+    // UPDATE IMAGE ONLY IF NEW IMAGE EXISTS
+    if (req.file) {
+      recipe.image = `/uploads/${req.file.filename}`;
+    }
+
+    // SAVE
     const updatedRecipe = await recipe.save();
 
+    // RESPONSE
     res.status(200).json({
       message: "Recipe updated successfully",
       recipe: updatedRecipe,
@@ -215,14 +288,13 @@ const updateRecipe = async (req, res) => {
     console.error("UPDATE RECIPE ERROR:", error);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message || "Server error",
     });
   }
 };
 
-// ==========================================
 // DELETE RECIPE
-// ==========================================
+
 const deleteRecipe = async (req, res) => {
   try {
     const { id } = req.params;
@@ -258,42 +330,21 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
-// ==========================================
-// ADD RECIPE TO FAVORITES
-// ==========================================
-const addFavorite = async (req, res) => {
+//GET MY RECIPE
+const getMyRecipes = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    // Check recipe exists
-    const recipe = await Recipe.findById(id);
-
-    if (!recipe) {
-      return res.status(404).json({
-        message: "Recipe not found",
-      });
-    }
-
-    // Find logged-in user
-    const user = await User.findById(req.user._id);
-
-    // Check already favorited
-    if (user.favorites.includes(id)) {
-      return res.status(400).json({
-        message: "Recipe already added to favorites",
-      });
-    }
-
-    // Add recipe
-    user.favorites.push(id);
-
-    await user.save();
+    const recipes = await Recipe.find({
+      createdBy: req.user._id,
+    }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
-      message: "Recipe added to favorites",
+      count: recipes.length,
+      recipes,
     });
   } catch (error) {
-    console.error("ADD FAVORITE ERROR:", error);
+    console.error("GET MY RECIPES ERROR:", error);
 
     res.status(500).json({
       message: "Server error",
@@ -301,59 +352,6 @@ const addFavorite = async (req, res) => {
   }
 };
 
-// ==========================================
-// REMOVE RECIPE FROM FAVORITES
-// ==========================================
-const removeFavorite = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const user = await User.findById(req.user._id);
-
-    user.favorites = user.favorites.filter(
-      (recipeId) => recipeId.toString() !== id
-    );
-
-    await user.save();
-
-    res.status(200).json({
-      message: "Recipe removed from favorites",
-    });
-  } catch (error) {
-    console.error("REMOVE FAVORITE ERROR:", error);
-
-    res.status(500).json({
-      message: "Server error",
-    });
-  }
-};
-
-// ==========================================
-// GET USER FAVORITES
-// ==========================================
-const getFavorites = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id)
-      .populate({
-        path: "favorites",
-        populate: {
-          path: "createdBy",
-          select: "name email",
-        },
-      });
-
-    res.status(200).json({
-      count: user.favorites.length,
-      favorites: user.favorites,
-    });
-  } catch (error) {
-    console.error("GET FAVORITES ERROR:", error);
-
-    res.status(500).json({
-      message: "Server error",
-    });
-  }
-};
 
 export default {
   createRecipe,
@@ -361,7 +359,5 @@ export default {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
-  addFavorite,
-  removeFavorite,
-  getFavorites,
+  getMyRecipes,
 };

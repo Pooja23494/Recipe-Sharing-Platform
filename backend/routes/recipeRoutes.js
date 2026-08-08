@@ -6,7 +6,8 @@ import upload from "../middleware/uploadMiddleware.js";
 
 const router = Router();
 
-// Create recipe - protected
+// CREATE RECIPE - PROTECTED
+
 router.post(
   "/",
   authMiddleware,
@@ -14,30 +15,25 @@ router.post(
   recipeController.createRecipe,
 );
 
-// Get all recipes - public
+// GET ALL RECIPES - PUBLIC
 router.get("/", recipeController.getRecipes);
 
-// Get single recipe - public
+// GET MY RECIPES - PROTECTED
+router.get("/my", authMiddleware, recipeController.getMyRecipes);
+
+// GET SINGLE RECIPE - PUBLIC
 router.get("/:id", recipeController.getRecipeById);
 
-// Update recipe - protected
-router.put("/:id", authMiddleware, recipeController.updateRecipe);
+// UPDATE RECIPE - PROTECTED
+// IMPORTANT: multer is required here
+router.put(
+  "/:id",
+  authMiddleware,
+  upload.single("image"),
+  recipeController.updateRecipe,
+);
 
-// Delete recipe - protected
+// DELETE RECIPE - PROTECTED
 router.delete("/:id", authMiddleware, recipeController.deleteRecipe);
-
-// Add favorite - protected
-router.post(
-  "/:id/favorite",
-  authMiddleware,
-  recipeController.addFavorite
-);
-
-// Remove favorite - protected
-router.delete(
-  "/:id/favorite",
-  authMiddleware,
-  recipeController.removeFavorite
-);
 
 export default router;
