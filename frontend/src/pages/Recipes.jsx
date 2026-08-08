@@ -31,7 +31,10 @@ const Recipes = () => {
   // ==========================================
   // API BASE URL
   // ==========================================
-  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+  const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, "");
 
   const getRecipeImage = (recipe) => {
     const fallback =
@@ -52,7 +55,7 @@ const Recipes = () => {
       return fallback;
     }
 
-    // Cloudinary / external URL
+    // External URL / Cloudinary / data URL
     if (
       image.startsWith("http://") ||
       image.startsWith("https://") ||
@@ -61,12 +64,12 @@ const Recipes = () => {
       return image;
     }
 
-    // Backend path
+    // Backend image path
     if (image.startsWith("/")) {
-      return `${API_BASE_URL}${image}`;
+      return `${SERVER_URL}${image}`;
     }
 
-    return `${API_BASE_URL}/${image}`;
+    return `${SERVER_URL}/${image}`;
   };
 
   // ==========================================
