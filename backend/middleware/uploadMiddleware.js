@@ -1,43 +1,23 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../config/cloudinary.js";
 
-// ==========================================
-// UPLOAD DIRECTORY
-// ==========================================
-
-const uploadDir = "uploads";
-
-// Create uploads folder if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, {
-    recursive: true,
-  });
-}
-
-// ==========================================
-// STORAGE
-// ==========================================
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
-  filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "recipe-sharing-platform",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+    transformation: [
+      {
+        width: 1200,
+        height: 800,
+        crop: "limit",
+        quality: "auto",
+        fetch_format: "auto",
+      },
+    ],
   },
 });
-
-// ==========================================
-// FILE FILTER
-// ==========================================
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -48,10 +28,6 @@ const fileFilter = (req, file, cb) => {
     cb(new Error("Only JPG, PNG and WebP images are allowed"), false);
   }
 };
-
-// ==========================================
-// MULTER
-// ==========================================
 
 const upload = multer({
   storage,

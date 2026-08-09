@@ -36,9 +36,7 @@ const createRecipe = async (req, res) => {
       : steps.split(",").map((item) => item.trim());
 
     // Get uploaded image path
-    const image = req.file
-      ? `/uploads/${req.file.filename}`
-      : "";
+    const image = req.file ? req.file.path : "";
 
     // Create recipe
     const recipe = await Recipe.create({
@@ -273,7 +271,7 @@ const updateRecipe = async (req, res) => {
 
     // UPDATE IMAGE ONLY IF NEW IMAGE EXISTS
     if (req.file) {
-      recipe.image = `/uploads/${req.file.filename}`;
+      recipe.image = req.file.path;
     }
 
     // SAVE
