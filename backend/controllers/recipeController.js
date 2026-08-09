@@ -1,25 +1,34 @@
 import Recipe from "../models/Recipe.js";
+import cloudinary from "../config/cloudinary.js";
+
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "recipe-sharing-platform",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      },
+    );
+
+    stream.end(fileBuffer);
+  });
+};
 
 // CREATE RECIPE
 
 const createRecipe = async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      ingredients,
-      steps,
-      category,
-    } = req.body;
+    const { title, description, ingredients, steps, category } = req.body;
 
     // Check required fields
-    if (
-      !title ||
-      !description ||
-      !ingredients ||
-      !steps ||
-      !category
-    ) {
+    if (!title || !description || !ingredients || !steps || !category) {
       return res.status(400).json({
         message: "Please provide all required fields",
       });
@@ -36,7 +45,13 @@ const createRecipe = async (req, res) => {
       : steps.split(",").map((item) => item.trim());
 
     // Get uploaded image path
-    const image = req.file ? req.file.path : "";
+    let image = "";
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+
+      image = result.secure_url;
+    }
 
     // Create recipe
     const recipe = await Recipe.create({
@@ -177,13 +192,7 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    const {
-      title,
-      description,
-      ingredients,
-      steps,
-      category,
-    } = req.body;
+    const { title, description, ingredients, steps, category } = req.body;
 
     console.log("UPDATE RECIPE BODY:", req.body);
     console.log("UPDATE RECIPE FILE:", req.file);
@@ -198,10 +207,7 @@ const updateRecipe = async (req, res) => {
     }
 
     // CHECK RECIPE OWNER
-    if (
-      recipe.createdBy.toString() !==
-      req.user._id.toString()
-    ) {
+    if (recipe.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You can only update your own recipe",
       });
@@ -247,9 +253,7 @@ const updateRecipe = async (req, res) => {
 
     if (steps !== undefined) {
       if (Array.isArray(steps)) {
-        stepsArray = steps
-          .map((item) => String(item).trim())
-          .filter(Boolean);
+        stepsArray = steps.map((item) => String(item).trim()).filter(Boolean);
       } else if (typeof steps === "string") {
         stepsArray = steps
           .split(/\r?\n/)
@@ -271,7 +275,11 @@ const updateRecipe = async (req, res) => {
 
     // UPDATE IMAGE ONLY IF NEW IMAGE EXISTS
     if (req.file) {
-      recipe.image = req.file.path;
+      const result = await uploadToCloudinary(req.file.buffer);
+
+      recipe.image = result.secure_url;
+
+      console.log("UPDATED CLOUDINARY IMAGE:", recipe.image);
     }
 
     // SAVE
@@ -349,7 +357,6 @@ const getMyRecipes = async (req, res) => {
     });
   }
 };
-
 
 export default {
   createRecipe,
