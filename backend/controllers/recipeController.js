@@ -1,6 +1,10 @@
 import Recipe from "../models/Recipe.js";
 import cloudinary from "../config/cloudinary.js";
 
+// ==========================================
+// UPLOAD IMAGE TO CLOUDINARY
+// ==========================================
+
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -21,48 +25,118 @@ const uploadToCloudinary = (fileBuffer) => {
   });
 };
 
+// ==========================================
+// CONVERT FIELD TO ARRAY
+// ==========================================
+
+const convertToArray = (value) => {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+
+  if (typeof value !== "string") {
+    return [];
+  }
+
+  // Frontend sends JSON.stringify(array)
+  try {
+    const parsed = JSON.parse(value);
+
+    if (Array.isArray(parsed)) {
+      return parsed.map((item) => String(item).trim()).filter(Boolean);
+    }
+  } catch {
+    // Not JSON, continue below
+  }
+
+  // Fallback: one item per line
+  return value
+    .split(/\r?\n/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+// ==========================================
 // CREATE RECIPE
+// ==========================================
 
 const createRecipe = async (req, res) => {
   try {
     const { title, description, ingredients, steps, category } = req.body;
 
-    // Check required fields
+    // ========================================
+    // VALIDATION
+    // ========================================
+
     if (!title || !description || !ingredients || !steps || !category) {
       return res.status(400).json({
         message: "Please provide all required fields",
       });
     }
 
-    // Convert ingredients to array
-    const ingredientsArray = Array.isArray(ingredients)
-      ? ingredients
-      : ingredients.split(",").map((item) => item.trim());
+    // ========================================
+    // CONVERT TO ARRAYS
+    // ========================================
 
-    // Convert steps to array
-    const stepsArray = Array.isArray(steps)
-      ? steps
-      : steps.split(",").map((item) => item.trim());
+    const ingredientsArray = convertToArray(ingredients);
 
-    // Get uploaded image path
+    const stepsArray = convertToArray(steps);
+
+    if (ingredientsArray.length === 0) {
+      return res.status(400).json({
+        message: "Please provide at least one ingredient",
+      });
+    }
+
+    if (stepsArray.length === 0) {
+      return res.status(400).json({
+        message: "Please provide at least one preparation step",
+      });
+    }
+
+    // ========================================
+    // UPLOAD IMAGE TO CLOUDINARY
+    // ========================================
+
     let image = "";
 
     if (req.file) {
+      console.log("Uploading image to Cloudinary...");
+
+      console.log("File:", req.file.originalname);
+
+      console.log("Size:", req.file.size);
+
       const result = await uploadToCloudinary(req.file.buffer);
 
       image = result.secure_url;
+
+      console.log("CLOUDINARY IMAGE:", image);
     }
 
-    // Create recipe
+    // ========================================
+    // CREATE RECIPE
+    // ========================================
+
     const recipe = await Recipe.create({
-      title,
-      description,
+      title: title.trim(),
+
+      description: description.trim(),
+
       ingredients: ingredientsArray,
+
       steps: stepsArray,
-      category,
+
+      category: category.trim(),
+
       image,
+
       createdBy: req.user._id,
     });
+
+    // ========================================
+    // RESPONSE
+    // ========================================
 
     res.status(201).json({
       message: "Recipe created successfully",
@@ -72,29 +146,32 @@ const createRecipe = async (req, res) => {
     console.error("CREATE RECIPE ERROR:", error);
 
     res.status(500).json({
-      message: "Server error",
+      message: error.message || "Server error",
     });
   }
 };
 
+// ==========================================
 // GET RECIPES
 // SEARCH + CATEGORY + PAGINATION
+// ==========================================
 
 const getRecipes = async (req, res) => {
   try {
     const { search, category, page = 1, limit = 10 } = req.query;
 
-    // Convert values to numbers
     const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+
     const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 50);
 
-    // Calculate how many documents to skip
     const skip = (pageNumber - 1) * limitNumber;
 
-    // Build filter
     const filter = {};
 
-    // Search title or description
+    // ========================================
+    // SEARCH
+    // ========================================
+
     if (search) {
       filter.$or = [
         {
@@ -112,7 +189,10 @@ const getRecipes = async (req, res) => {
       ];
     }
 
-    // Category filter
+    // ========================================
+    // CATEGORY
+    // ========================================
+
     if (category) {
       filter.category = {
         $regex: `^${category}$`,
@@ -120,17 +200,28 @@ const getRecipes = async (req, res) => {
       };
     }
 
-    // Get total number of matching recipes
+    // ========================================
+    // TOTAL
+    // ========================================
+
     const totalRecipes = await Recipe.countDocuments(filter);
 
-    // Get recipes for current page
+    // ========================================
+    // RECIPES
+    // ========================================
+
     const recipes = await Recipe.find(filter)
       .populate("createdBy", "name email")
-      .sort({ createdAt: -1 })
+      .sort({
+        createdAt: -1,
+      })
       .skip(skip)
       .limit(limitNumber);
 
-    // Calculate total pages
+    // ========================================
+    // TOTAL PAGES
+    // ========================================
+
     const totalPages = Math.ceil(totalRecipes / limitNumber);
 
     res.status(200).json({
@@ -150,7 +241,9 @@ const getRecipes = async (req, res) => {
   }
 };
 
+// ==========================================
 // GET SINGLE RECIPE
+// ==========================================
 
 const getRecipeById = async (req, res) => {
   try {
@@ -179,13 +272,14 @@ const getRecipeById = async (req, res) => {
   }
 };
 
+// ==========================================
 // UPDATE RECIPE
+// ==========================================
 
 const updateRecipe = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // SAFETY CHECK
     if (!req.body) {
       return res.status(400).json({
         message: "Request body is missing.",
@@ -195,9 +289,13 @@ const updateRecipe = async (req, res) => {
     const { title, description, ingredients, steps, category } = req.body;
 
     console.log("UPDATE RECIPE BODY:", req.body);
+
     console.log("UPDATE RECIPE FILE:", req.file);
 
+    // ========================================
     // FIND RECIPE
+    // ========================================
+
     const recipe = await Recipe.findById(id);
 
     if (!recipe) {
@@ -206,14 +304,20 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // CHECK RECIPE OWNER
+    // ========================================
+    // CHECK OWNER
+    // ========================================
+
     if (recipe.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You can only update your own recipe",
       });
     }
 
-    // VALIDATE REQUIRED FIELDS
+    // ========================================
+    // VALIDATION
+    // ========================================
+
     if (!title || !title.trim()) {
       return res.status(400).json({
         message: "Recipe title is required",
@@ -232,37 +336,46 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // CONVERT INGREDIENTS TO ARRAY
+    // ========================================
+    // INGREDIENTS
+    // ========================================
+
     let ingredientsArray = recipe.ingredients;
 
     if (ingredients !== undefined) {
-      if (Array.isArray(ingredients)) {
-        ingredientsArray = ingredients
-          .map((item) => String(item).trim())
-          .filter(Boolean);
-      } else if (typeof ingredients === "string") {
-        ingredientsArray = ingredients
-          .split(/\r?\n/)
-          .map((item) => item.trim())
-          .filter(Boolean);
-      }
+      ingredientsArray = convertToArray(ingredients);
     }
 
-    // CONVERT STEPS TO ARRAY
+    // ========================================
+    // STEPS
+    // ========================================
+
     let stepsArray = recipe.steps;
 
     if (steps !== undefined) {
-      if (Array.isArray(steps)) {
-        stepsArray = steps.map((item) => String(item).trim()).filter(Boolean);
-      } else if (typeof steps === "string") {
-        stepsArray = steps
-          .split(/\r?\n/)
-          .map((item) => item.trim())
-          .filter(Boolean);
-      }
+      stepsArray = convertToArray(steps);
     }
 
-    // UPDATE TEXT FIELDS
+    // ========================================
+    // VALIDATE ARRAYS
+    // ========================================
+
+    if (ingredientsArray.length === 0) {
+      return res.status(400).json({
+        message: "At least one ingredient is required",
+      });
+    }
+
+    if (stepsArray.length === 0) {
+      return res.status(400).json({
+        message: "At least one preparation step is required",
+      });
+    }
+
+    // ========================================
+    // UPDATE TEXT
+    // ========================================
+
     recipe.title = title.trim();
 
     recipe.description = description.trim();
@@ -273,8 +386,13 @@ const updateRecipe = async (req, res) => {
 
     recipe.category = category.trim();
 
-    // UPDATE IMAGE ONLY IF NEW IMAGE EXISTS
+    // ========================================
+    // UPDATE IMAGE
+    // ========================================
+
     if (req.file) {
+      console.log("Uploading updated image...");
+
       const result = await uploadToCloudinary(req.file.buffer);
 
       recipe.image = result.secure_url;
@@ -282,10 +400,16 @@ const updateRecipe = async (req, res) => {
       console.log("UPDATED CLOUDINARY IMAGE:", recipe.image);
     }
 
+    // ========================================
     // SAVE
+    // ========================================
+
     const updatedRecipe = await recipe.save();
 
+    // ========================================
     // RESPONSE
+    // ========================================
+
     res.status(200).json({
       message: "Recipe updated successfully",
       recipe: updatedRecipe,
@@ -299,13 +423,14 @@ const updateRecipe = async (req, res) => {
   }
 };
 
+// ==========================================
 // DELETE RECIPE
+// ==========================================
 
 const deleteRecipe = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find recipe
     const recipe = await Recipe.findById(id);
 
     if (!recipe) {
@@ -314,14 +439,20 @@ const deleteRecipe = async (req, res) => {
       });
     }
 
-    // Check recipe owner
+    // ========================================
+    // CHECK OWNER
+    // ========================================
+
     if (recipe.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         message: "You can only delete your own recipe",
       });
     }
 
-    // Delete recipe
+    // ========================================
+    // DELETE
+    // ========================================
+
     await Recipe.findByIdAndDelete(id);
 
     res.status(200).json({
@@ -336,7 +467,10 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
-//GET MY RECIPE
+// ==========================================
+// GET MY RECIPES
+// ==========================================
+
 const getMyRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.find({
@@ -357,6 +491,10 @@ const getMyRecipes = async (req, res) => {
     });
   }
 };
+
+// ==========================================
+// EXPORT
+// ==========================================
 
 export default {
   createRecipe,
