@@ -32,9 +32,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // ==========================================
   // EDIT PROFILE STATE
-  // ==========================================
+
   const [isEditing, setIsEditing] = useState(false);
 
   const [profileData, setProfileData] = useState({
@@ -46,9 +45,8 @@ const Profile = () => {
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
 
-  // ==========================================
   // SET PROFILE DATA
-  // ==========================================
+
   useEffect(() => {
     if (user) {
       setProfileData({
@@ -58,9 +56,8 @@ const Profile = () => {
     }
   }, [user]);
 
-  // ==========================================
   // FETCH MY RECIPES
-  // ==========================================
+
   const fetchMyRecipes = async () => {
     try {
       setLoading(true);
@@ -70,30 +67,22 @@ const Profile = () => {
 
       setRecipes(response.data.recipes || []);
     } catch (error) {
-      console.error(
-        "MY RECIPES ERROR:",
-        error
-      );
+      console.error("MY RECIPES ERROR:", error);
 
-      setError(
-        error.response?.data?.message ||
-          "Failed to load your recipes."
-      );
+      setError(error.response?.data?.message || "Failed to load your recipes.");
     } finally {
       setLoading(false);
     }
   };
 
-  // ==========================================
   // FETCH ON PAGE LOAD
-  // ==========================================
+
   useEffect(() => {
     fetchMyRecipes();
   }, []);
 
-  // ==========================================
   // HANDLE PROFILE INPUT
-  // ==========================================
+
   const handleProfileChange = (e) => {
     setProfileData({
       ...profileData,
@@ -104,9 +93,8 @@ const Profile = () => {
     setProfileMessage("");
   };
 
-  // ==========================================
   // OPEN EDIT MODE
-  // ==========================================
+
   const handleEditProfile = () => {
     setProfileData({
       name: user?.name || "",
@@ -118,9 +106,8 @@ const Profile = () => {
     setIsEditing(true);
   };
 
-  // ==========================================
   // CANCEL EDIT
-  // ==========================================
+
   const handleCancelEdit = () => {
     setProfileData({
       name: user?.name || "",
@@ -132,9 +119,8 @@ const Profile = () => {
     setIsEditing(false);
   };
 
-  // ==========================================
   // SAVE PROFILE
-  // ==========================================
+
   const handleSaveProfile = async (e) => {
     e.preventDefault();
 
@@ -155,67 +141,48 @@ const Profile = () => {
     try {
       setSavingProfile(true);
 
-      const response = await api.put(
-        "/users/profile",
-        {
-          name: profileData.name.trim(),
-          email: profileData.email.trim(),
-        }
-      );
+      const response = await api.put("/users/profile", {
+        name: profileData.name.trim(),
+        email: profileData.email.trim(),
+      });
 
-      const updatedUser =
-        response.data.user;
+      const updatedUser = response.data.user;
 
-      // ========================================
       // UPDATE AUTH CONTEXT
-      // ========================================
+
       if (updatedUser) {
-        const token =
-          localStorage.getItem("token");
+        const token = localStorage.getItem("token");
 
         login(updatedUser, token);
       }
 
       setProfileMessage(
-        response.data.message ||
-          "Profile updated successfully!"
+        response.data.message || "Profile updated successfully!",
       );
 
       setIsEditing(false);
-
     } catch (error) {
-      console.error(
-        "UPDATE PROFILE ERROR:",
-        error
-      );
+      console.error("UPDATE PROFILE ERROR:", error);
 
       setProfileError(
-        error.response?.data?.message ||
-          "Failed to update profile."
+        error.response?.data?.message || "Failed to update profile.",
       );
     } finally {
       setSavingProfile(false);
     }
   };
 
-  // ==========================================
   // USER INITIAL
-  // ==========================================
-  const userInitial =
-    user?.name
-      ?.charAt(0)
-      ?.toUpperCase() || "U";
 
-  // ==========================================
+  const userInitial = user?.name?.charAt(0)?.toUpperCase() || "U";
+
   // LOADING
-  // ==========================================
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-
-        <section className="bg-gradient-to-br from-orange-500 to-orange-700">
+        <section className="bg-linear-to-br from-orange-500 to-orange-700">
           <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-
             <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
               My Profile
             </h1>
@@ -223,37 +190,26 @@ const Profile = () => {
             <p className="mt-2 text-orange-100">
               Manage your profile and recipes
             </p>
-
           </div>
         </section>
 
         <div className="flex min-h-[50vh] items-center justify-center px-4">
-
           <div className="text-center">
-
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500" />
 
-            <p className="font-medium text-gray-600">
-              Loading your profile...
-            </p>
-
+            <p className="font-medium text-gray-600">Loading your profile...</p>
           </div>
-
         </div>
-
       </div>
     );
   }
 
-  // ==========================================
-  // PAGE
-  // ==========================================
   return (
     <div className="min-h-screen bg-gray-50">
       {/* =====================================
           PROFILE HEADER
       ====================================== */}
-      <section className="bg-gradient-to-br from-orange-500 to-orange-700">
+      <section className="bg-linear-to-br from-orange-500 to-orange-700">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             {/* USER */}
@@ -300,22 +256,16 @@ const Profile = () => {
         </div>
       </section>
 
-      {/* =====================================
-          MAIN
-      ====================================== */}
+      {/* MAIN */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* =================================
-            PROFILE MESSAGE
-        ================================= */}
+        {/* PROFILE MESSAGE */}
         {profileMessage && (
           <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-600">
             ✓ {profileMessage}
           </div>
         )}
 
-        {/* =================================
-            STATS
-        ================================= */}
+        {/* STATS */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl bg-white p-5 shadow-sm">
             <div className="flex items-center gap-4">
@@ -348,9 +298,7 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* =================================
-            PROFILE INFORMATION
-        ================================= */}
+        {/* PROFILE INFORMATION */}
         <section className="mb-8 rounded-2xl bg-white p-6 shadow-sm sm:p-8">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
@@ -378,9 +326,7 @@ const Profile = () => {
             )}
           </div>
 
-          {/* =================================
-              EDIT FORM
-          ================================= */}
+          {/* EDIT FORM */}
           {isEditing ? (
             <form onSubmit={handleSaveProfile} className="space-y-5">
               {/* Error */}
@@ -478,9 +424,7 @@ const Profile = () => {
               </div>
             </form>
           ) : (
-            /* =================================
-                PROFILE VIEW
-            ================================= */
+            /* PROFILE VIEW */
             <div className="grid gap-4 sm:grid-cols-2">
               {/* Name */}
               <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
@@ -507,9 +451,7 @@ const Profile = () => {
           )}
         </section>
 
-        {/* =================================
-            MY RECIPES HEADER
-        ================================= */}
+        {/* MY RECIPES HEADER */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">My Recipes</h2>
@@ -528,9 +470,7 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* =================================
-            ERROR
-        ================================= */}
+        {/* ERROR */}
         {error && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-5">
             <p className="font-semibold text-red-600">Unable to load recipes</p>
@@ -546,9 +486,7 @@ const Profile = () => {
           </div>
         )}
 
-        {/* =================================
-            EMPTY STATE
-        ================================= */}
+        {/* EMPTY STATE */}
         {!error && recipes.length === 0 && (
           <div className="rounded-2xl bg-white px-6 py-14 text-center shadow-sm">
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-orange-100 text-orange-500">
@@ -572,9 +510,7 @@ const Profile = () => {
           </div>
         )}
 
-        {/* =================================
-            RECIPE GRID
-        ================================= */}
+        {/* RECIPE GRID */}
         {!error && recipes.length > 0 && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {recipes.map((recipe) => (
@@ -594,7 +530,7 @@ const Profile = () => {
                       }}
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-100 to-orange-50">
+                    <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-orange-100 to-orange-50">
                       <FiBookOpen size={48} className="text-orange-300" />
                     </div>
                   )}

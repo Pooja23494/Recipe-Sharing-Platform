@@ -17,17 +17,15 @@ const FALLBACK_IMAGE =
 
 const API_BASE_URL = "http://localhost:5000";
 
-// ======================================================
 // CONVERT ANY VALUE TO A CLEAN ARRAY
-// ======================================================
+
 const convertToArray = (value) => {
   if (!value) {
     return [];
   }
 
-  // ------------------------------------------
   // CASE 1: Already an array
-  // ------------------------------------------
+
   if (Array.isArray(value)) {
     let result = [];
 
@@ -70,9 +68,8 @@ const convertToArray = (value) => {
     return result.filter(Boolean);
   }
 
-  // ------------------------------------------
   // CASE 2: String
-  // ------------------------------------------
+
   if (typeof value === "string") {
     const trimmed = value.trim();
 
@@ -107,9 +104,8 @@ const convertToArray = (value) => {
     return [trimmed];
   }
 
-  // ------------------------------------------
   // Other value types
-  // ------------------------------------------
+
   return [String(value)];
 };
 
@@ -122,9 +118,8 @@ const RecipeDetails = () => {
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  // ======================================================
   // GET LOGGED-IN USER
-  // ======================================================
+
   let user = null;
 
   try {
@@ -133,9 +128,8 @@ const RecipeDetails = () => {
     console.error("USER PARSE ERROR:", error);
   }
 
-  // ======================================================
   // FETCH RECIPE
-  // ======================================================
+
   const fetchRecipe = async () => {
     try {
       setLoading(true);
@@ -171,16 +165,14 @@ const RecipeDetails = () => {
     }
   };
 
-  // ======================================================
   // FETCH ON PAGE LOAD
-  // ======================================================
+
   useEffect(() => {
     fetchRecipe();
   }, [id]);
 
-  // ======================================================
   // DELETE RECIPE
-  // ======================================================
+
   const handleDelete = async () => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this recipe?",
@@ -208,9 +200,8 @@ const RecipeDetails = () => {
     }
   };
 
-  // ======================================================
   // GET RECIPE IMAGE
-  // ======================================================
+
   const getRecipeImage = () => {
     if (recipe?.image) {
       if (recipe.image.startsWith("http")) {
@@ -231,9 +222,8 @@ const RecipeDetails = () => {
     return FALLBACK_IMAGE;
   };
 
-  // ======================================================
   // LOADING
-  // ======================================================
+
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 px-4">
@@ -247,9 +237,8 @@ const RecipeDetails = () => {
     );
   }
 
-  // ======================================================
   // ERROR
-  // ======================================================
+
   if (error && !recipe) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 px-4">
@@ -275,9 +264,8 @@ const RecipeDetails = () => {
     );
   }
 
-  // ======================================================
   // RECIPE NOT FOUND
-  // ======================================================
+
   if (!recipe) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-gray-50 px-4">
@@ -304,9 +292,8 @@ const RecipeDetails = () => {
     );
   }
 
-  // ======================================================
   // OWNER CHECK
-  // ======================================================
+
   const loggedInUserId = user?.id || user?._id;
 
   const recipeOwnerId =
@@ -317,21 +304,17 @@ const RecipeDetails = () => {
     recipeOwnerId &&
     String(loggedInUserId) === String(recipeOwnerId);
 
-  // ======================================================
   // SAFE ARRAYS
-  // ======================================================
+
   const ingredients = convertToArray(recipe.ingredients);
   const steps = convertToArray(recipe.steps);
 
-  // ======================================================
-  // PAGE
-  // ======================================================
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ==================================================
       HERO
   ================================================== */}
-      <section className="bg-gradient-to-br from-orange-500 to-orange-700">
+      <section className="bg-linear-to-br from-orange-500 to-orange-700">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <Link
             to="/recipes"
@@ -361,9 +344,7 @@ const RecipeDetails = () => {
         </div>
       </section>
 
-      {/* ==================================================
-      MAIN
-  ================================================== */}
+      {/* MAIN */}
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-3">
           {/* ==================================================
@@ -372,7 +353,7 @@ const RecipeDetails = () => {
           <div className="space-y-8 lg:col-span-2">
             {/* IMAGE */}
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-              <div className="h-64 overflow-hidden sm:h-80 lg:h-[420px]">
+              <div className="h-64 overflow-hidden sm:h-80 lg:h-105">
                 <img
                   src={getRecipeImage()}
                   alt={recipe.title || "Recipe"}
@@ -386,9 +367,7 @@ const RecipeDetails = () => {
               </div>
             </div>
 
-            {/* ==================================================
-            INGREDIENTS
-        ================================================== */}
+            {/* INGREDIENTS */}
             <section className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-6 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
@@ -431,9 +410,7 @@ const RecipeDetails = () => {
               )}
             </section>
 
-            {/* ==================================================
-            PREPARATION STEPS
-        ================================================== */}
+            {/* PREPARATION STEPS */}
             <section className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
               <div className="mb-7 flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
@@ -477,9 +454,7 @@ const RecipeDetails = () => {
             </section>
           </div>
 
-          {/* ==================================================
-          SIDEBAR
-      ================================================== */}
+          {/* SIDEBAR */}
           <aside className="space-y-6">
             {/* CREATOR */}
             <div className="rounded-2xl bg-white p-6 shadow-sm">

@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Link,
-  useNavigate,
-  useParams,
-} from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
   FiArrowLeft,
@@ -36,9 +32,8 @@ const EditRecipe = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // ==========================================
   // FORM DATA
-  // ==========================================
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -47,24 +42,21 @@ const EditRecipe = () => {
     category: "",
   });
 
-  // ==========================================
   // IMAGE
-  // ==========================================
+
   const [currentImage, setCurrentImage] = useState("");
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
 
-  // ==========================================
   // STATES
-  // ==========================================
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // ==========================================
   // GET EXISTING RECIPE
-  // ==========================================
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -81,19 +73,16 @@ const EditRecipe = () => {
           description: recipe.description || "",
 
           // One ingredient per line
-          ingredients:
-            recipe.ingredients?.join("\n") || "",
+          ingredients: recipe.ingredients?.join("\n") || "",
 
           // One step per line
-          steps:
-            recipe.steps?.join("\n") || "",
+          steps: recipe.steps?.join("\n") || "",
 
           category: recipe.category || "",
         });
 
-        // ======================================
         // CURRENT IMAGE
-        // ======================================
+
         const existingImage = recipe.image || recipe.imageUrl || "";
 
         const imageUrl = getImageUrl(existingImage);
@@ -101,15 +90,9 @@ const EditRecipe = () => {
         setCurrentImage(imageUrl);
         setImagePreview(imageUrl);
       } catch (error) {
-        console.error(
-          "FETCH RECIPE ERROR:",
-          error
-        );
+        console.error("FETCH RECIPE ERROR:", error);
 
-        setError(
-          error.response?.data?.message ||
-            "Failed to load recipe."
-        );
+        setError(error.response?.data?.message || "Failed to load recipe.");
       } finally {
         setLoading(false);
       }
@@ -118,9 +101,8 @@ const EditRecipe = () => {
     fetchRecipe();
   }, [id]);
 
-  // ==========================================
   // HANDLE TEXT INPUT
-  // ==========================================
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -131,9 +113,8 @@ const EditRecipe = () => {
     setMessage("");
   };
 
-  // ==========================================
   // HANDLE IMAGE SELECT
-  // ==========================================
+
   const handleImageChange = (e) => {
     const selectedFile = e.target.files?.[0];
 
@@ -141,17 +122,15 @@ const EditRecipe = () => {
       return;
     }
 
-    // ========================================
     // CHECK FILE TYPE
-    // ========================================
+
     if (!selectedFile.type.startsWith("image/")) {
       setError("Please select a valid image file.");
       return;
     }
 
-    // ========================================
     // CHECK FILE SIZE
-    // ========================================
+
     const maxSize = 5 * 1024 * 1024; // 5 MB
 
     if (selectedFile.size > maxSize) {
@@ -164,18 +143,15 @@ const EditRecipe = () => {
 
     setImage(selectedFile);
 
-    // ========================================
     // CREATE PREVIEW
-    // ========================================
-    const previewUrl =
-      URL.createObjectURL(selectedFile);
+
+    const previewUrl = URL.createObjectURL(selectedFile);
 
     setImagePreview(previewUrl);
   };
 
-  // ==========================================
   // REMOVE NEW IMAGE
-  // ==========================================
+
   const handleRemoveImage = () => {
     setImage(null);
 
@@ -185,41 +161,33 @@ const EditRecipe = () => {
     setError("");
   };
 
-  // ==========================================
   // HANDLE SUBMIT
-  // ==========================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
     setMessage("");
 
-    // ========================================
     // VALIDATION
-    // ========================================
+
     if (!formData.title.trim()) {
       setError("Please enter a recipe title.");
       return;
     }
 
     if (!formData.description.trim()) {
-      setError(
-        "Please enter a recipe description."
-      );
+      setError("Please enter a recipe description.");
       return;
     }
 
     if (!formData.ingredients.trim()) {
-      setError(
-        "Please enter at least one ingredient."
-      );
+      setError("Please enter at least one ingredient.");
       return;
     }
 
     if (!formData.steps.trim()) {
-      setError(
-        "Please enter the preparation steps."
-      );
+      setError("Please enter the preparation steps.");
       return;
     }
 
@@ -231,119 +199,81 @@ const EditRecipe = () => {
     try {
       setSaving(true);
 
-      // ========================================
       // CONVERT INGREDIENTS TO ARRAY
-      // ========================================
+
       const ingredients = formData.ingredients
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean);
 
-      // ========================================
       // CONVERT STEPS TO ARRAY
-      // ========================================
+
       const steps = formData.steps
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean);
 
-      // ========================================
       // CREATE FORMDATA
-      // ========================================
+
       const data = new FormData();
 
-      data.append(
-        "title",
-        formData.title.trim()
-      );
+      data.append("title", formData.title.trim());
 
-      data.append(
-        "description",
-        formData.description.trim()
-      );
+      data.append("description", formData.description.trim());
 
-      data.append(
-        "category",
-        formData.category
-      );
+      data.append("category", formData.category);
 
       // Send arrays as JSON strings
-      data.append(
-        "ingredients",
-        JSON.stringify(ingredients)
-      );
+      data.append("ingredients", JSON.stringify(ingredients));
 
-      data.append(
-        "steps",
-        JSON.stringify(steps)
-      );
+      data.append("steps", JSON.stringify(steps));
 
-      // ========================================
       // ADD NEW IMAGE ONLY IF SELECTED
-      // ========================================
+
       if (image) {
         data.append("image", image);
       }
 
-      // ========================================
       // UPDATE RECIPE
-      // ========================================
-      const response = await api.put(
-        `/recipes/${id}`,
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
 
-      setMessage(
-        response.data.message ||
-          "Recipe updated successfully!"
-      );
+      const response = await api.put(`/recipes/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-      // ========================================
+      setMessage(response.data.message || "Recipe updated successfully!");
+
       // REDIRECT
-      // ========================================
+
       setTimeout(() => {
         navigate(`/recipes/${id}`);
       }, 1000);
     } catch (error) {
-      console.error(
-        "UPDATE RECIPE ERROR:",
-        error
-      );
+      console.error("UPDATE RECIPE ERROR:", error);
 
-      setError(
-        error.response?.data?.message ||
-          "Failed to update recipe."
-      );
+      setError(error.response?.data?.message || "Failed to update recipe.");
     } finally {
       setSaving(false);
     }
   };
 
-  // ==========================================
   // LOADING
-  // ==========================================
+
   if (loading) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-gray-50 px-4">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-orange-200 border-t-orange-500" />
 
-          <p className="font-medium text-gray-600">
-            Loading recipe...
-          </p>
+          <p className="font-medium text-gray-600">Loading recipe...</p>
         </div>
       </div>
     );
   }
 
-  // ==========================================
   // ERROR / FAILED TO LOAD
-  // ==========================================
+
   if (error && !formData.title) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center bg-gray-50 px-4">
@@ -356,9 +286,7 @@ const EditRecipe = () => {
             Unable to Load Recipe
           </h2>
 
-          <p className="mt-2 text-sm text-red-500">
-            {error}
-          </p>
+          <p className="mt-2 text-sm text-red-500">{error}</p>
 
           <Link
             to="/recipes"
@@ -372,15 +300,12 @@ const EditRecipe = () => {
     );
   }
 
-  // ==========================================
-  // PAGE
-  // ==========================================
   return (
     <div className="min-h-screen bg-gray-50">
       {/* =====================================
           HEADER
       ====================================== */}
-      <section className="bg-gradient-to-br from-orange-500 to-orange-700">
+      <section className="bg-linear-to-br from-orange-500 to-orange-700">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
           <Link
             to={`/recipes/${id}`}
@@ -440,10 +365,7 @@ const EditRecipe = () => {
             ================================= */}
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <FiImage
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiImage className="text-orange-500" size={18} />
 
                 <label className="text-sm font-semibold text-gray-700">
                   Recipe Image
@@ -462,9 +384,7 @@ const EditRecipe = () => {
                   <div className="flex h-64 flex-col items-center justify-center text-gray-400 sm:h-80">
                     <FiImage size={50} />
 
-                    <p className="mt-3 text-sm">
-                      No image selected
-                    </p>
+                    <p className="mt-3 text-sm">No image selected</p>
                   </div>
                 )}
 
@@ -488,9 +408,7 @@ const EditRecipe = () => {
               >
                 <FiUpload size={19} />
 
-                {image
-                  ? "Choose Different Image"
-                  : "Upload New Image"}
+                {image ? "Choose Different Image" : "Upload New Image"}
 
                 <input
                   id="image"
@@ -512,15 +430,10 @@ const EditRecipe = () => {
               )}
             </div>
 
-            {/* =================================
-                TITLE
-            ================================= */}
+            {/* TITLE */}
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <FiBookOpen
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiBookOpen className="text-orange-500" size={18} />
 
                 <label
                   htmlFor="title"
@@ -542,15 +455,10 @@ const EditRecipe = () => {
               />
             </div>
 
-            {/* =================================
-                CATEGORY
-            ================================= */}
+            {/* CATEGORY */}
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <FiTag
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiTag className="text-orange-500" size={18} />
 
                 <label
                   htmlFor="category"
@@ -568,41 +476,24 @@ const EditRecipe = () => {
                 className="w-full appearance-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 text-gray-700 outline-none transition focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-100"
                 required
               >
-                <option value="">
-                  Select Category
-                </option>
+                <option value="">Select Category</option>
 
-                <option value="Breakfast">
-                  Breakfast
-                </option>
+                <option value="Breakfast">Breakfast</option>
 
-                <option value="Lunch">
-                  Lunch
-                </option>
+                <option value="Lunch">Lunch</option>
 
-                <option value="Dinner">
-                  Dinner
-                </option>
+                <option value="Dinner">Dinner</option>
 
-                <option value="Dessert">
-                  Dessert
-                </option>
+                <option value="Dessert">Dessert</option>
 
-                <option value="Snack">
-                  Snack
-                </option>
+                <option value="Snack">Snack</option>
               </select>
             </div>
 
-            {/* =================================
-                DESCRIPTION
-            ================================= */}
+            {/* DESCRIPTION */}
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <FiFileText
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiFileText className="text-orange-500" size={18} />
 
                 <label
                   htmlFor="description"
@@ -628,15 +519,10 @@ const EditRecipe = () => {
               </p>
             </div>
 
-            {/* =================================
-                INGREDIENTS
-            ================================= */}
+            {/* INGREDIENTS */}
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <FiList
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiList className="text-orange-500" size={18} />
 
                 <label
                   htmlFor="ingredients"
@@ -667,15 +553,10 @@ const EditRecipe = () => {
               </p>
             </div>
 
-            {/* =================================
-                STEPS
-            ================================= */}
+            {/* STEPS */}
             <div>
               <div className="mb-2 flex items-center gap-2">
-                <FiList
-                  className="text-orange-500"
-                  size={18}
-                />
+                <FiList className="text-orange-500" size={18} />
 
                 <label
                   htmlFor="steps"
@@ -708,9 +589,7 @@ Add poha and mix well.`}
             </div>
           </div>
 
-          {/* =====================================
-              FOOTER BUTTONS
-          ====================================== */}
+          {/* FOOTER BUTTONS */}
           <div className="flex flex-col-reverse gap-3 border-t border-gray-100 bg-gray-50 p-6 sm:flex-row sm:justify-end sm:px-8">
             <Link
               to={`/recipes/${id}`}
@@ -723,7 +602,7 @@ Add poha and mix well.`}
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+              className="flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             >
               {saving ? (
                 <>
@@ -745,4 +624,3 @@ Add poha and mix well.`}
 };
 
 export default EditRecipe;
-

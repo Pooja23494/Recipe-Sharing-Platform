@@ -40,14 +40,13 @@ const Navbar = () => {
     <nav className="sticky top-0 z-50 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md shadow-sm">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-
           {/* Logo */}
           <Link
             to="/recipes"
             onClick={closeMenu}
             className="flex items-center gap-2 group"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md transition-transform duration-200 group-hover:scale-105">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-orange-500 to-orange-600 text-white shadow-md transition-transform duration-200 group-hover:scale-105">
               <FiBookOpen size={21} />
             </div>
 
@@ -63,7 +62,6 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden items-center gap-2 md:flex">
-
             <NavLink to="/recipes" className={navLinkClass}>
               <FiHome size={17} />
               Recipes
@@ -88,7 +86,7 @@ const Navbar = () => {
                   </div>
 
                   <div className="hidden lg:block">
-                    <p className="max-w-[120px] truncate text-sm font-semibold text-gray-800">
+                    <p className="max-w-30 truncate text-sm font-semibold text-gray-800">
                       {user?.name || "User"}
                     </p>
                     <p className="text-xs text-gray-400">Welcome back</p>
@@ -115,7 +113,7 @@ const Navbar = () => {
 
                 <NavLink
                   to="/register"
-                  className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-2 font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="flex items-center gap-2 rounded-lg bg-linear-to-r from-orange-500 to-orange-600 px-4 py-2 font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <FiUserPlus size={17} />
                   Register
@@ -138,7 +136,6 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="border-t border-gray-100 py-4 md:hidden">
-            
             {/* User Info */}
             {isAuthenticated && (
               <div className="mb-3 flex items-center gap-3 rounded-xl bg-orange-50 p-3">
@@ -150,15 +147,12 @@ const Navbar = () => {
                   <p className="truncate font-semibold text-gray-800">
                     {user?.name || "User"}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Welcome back 👋
-                  </p>
+                  <p className="text-xs text-gray-500">Welcome back 👋</p>
                 </div>
               </div>
             )}
 
             <div className="flex flex-col gap-1">
-
               <NavLink
                 to="/recipes"
                 onClick={closeMenu}
@@ -210,7 +204,7 @@ const Navbar = () => {
                   <NavLink
                     to="/register"
                     onClick={closeMenu}
-                    className="mt-1 flex items-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2.5 font-medium text-white"
+                    className="mt-1 flex items-center gap-2 rounded-lg bg-linear-to-r from-orange-500 to-orange-600 px-3 py-2.5 font-medium text-white"
                   >
                     <FiUserPlus size={18} />
                     Register

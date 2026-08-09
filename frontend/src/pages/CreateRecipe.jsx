@@ -33,9 +33,7 @@ const CreateRecipe = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  // ==========================================
   // HANDLE TEXT INPUT
-  // ==========================================
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,9 +47,7 @@ const CreateRecipe = () => {
     setMessage("");
   };
 
-  // ==========================================
   // HANDLE IMAGE
-  // ==========================================
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
@@ -96,9 +92,7 @@ const CreateRecipe = () => {
     setImagePreview(previewUrl);
   };
 
-  // ==========================================
   // REMOVE IMAGE
-  // ==========================================
 
   const handleRemoveImage = () => {
     if (imagePreview) {
@@ -115,9 +109,7 @@ const CreateRecipe = () => {
     }
   };
 
-  // ==========================================
   // CREATE RECIPE
-  // ==========================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -125,10 +117,8 @@ const CreateRecipe = () => {
     setError("");
     setMessage("");
 
-    // ========================================
     // VALIDATION
-    // ========================================
-
+  
     if (!formData.title.trim()) {
       setError("Please enter a recipe title.");
       return;
@@ -157,9 +147,7 @@ const CreateRecipe = () => {
     try {
       setLoading(true);
 
-      // ========================================
       // CONVERT TEXT TO ARRAYS
-      // ========================================
 
       const ingredients = formData.ingredients
         .split("\n")
@@ -171,9 +159,7 @@ const CreateRecipe = () => {
         .map((item) => item.trim())
         .filter(Boolean);
 
-      // ========================================
       // CREATE FORMDATA
-      // ========================================
 
       const data = new FormData();
 
@@ -202,9 +188,7 @@ const CreateRecipe = () => {
         data.append("image", image);
       }
 
-      // ========================================
       // DEBUG FORMDATA
-      // ========================================
 
       console.log("========== CREATE RECIPE ==========");
       console.log("Title:", formData.title);
@@ -214,9 +198,7 @@ const CreateRecipe = () => {
       console.log("Image type:", image?.type);
       console.log("Image size:", image?.size);
 
-      // ========================================
       // SEND REQUEST
-      // ========================================
 
       const response = await api.post("/recipes", data);
 
@@ -227,9 +209,7 @@ const CreateRecipe = () => {
           "Recipe created successfully!"
       );
 
-      // ========================================
       // CLEAR FORM
-      // ========================================
 
       setFormData({
         title: "",
@@ -241,9 +221,7 @@ const CreateRecipe = () => {
 
       handleRemoveImage();
 
-      // ========================================
       // REDIRECT
-      // ========================================
 
       setTimeout(() => {
         navigate("/recipes");
@@ -264,10 +242,6 @@ const CreateRecipe = () => {
       setLoading(false);
     }
   };
-
-  // ==========================================
-  // PAGE
-  // ==========================================
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -583,7 +557,7 @@ Cook for 3-4 minutes.`}
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex items-center justify-center gap-2 rounded-xl bg-linear-to-r from-orange-500 to-orange-600 px-6 py-3 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>

@@ -28,9 +28,8 @@ const Recipes = () => {
 
   const limit = 6;
 
-  // ==========================================
   // API BASE URL
-  // ==========================================
+
   const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -75,15 +74,13 @@ const Recipes = () => {
     return `${serverUrl}/${image}`;
   };
 
-  // ==========================================
   // FALLBACK IMAGE
-  // ==========================================
+
   const fallbackImage =
     "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80";
 
-  // ==========================================
   // FETCH RECIPES
-  // ==========================================
+
   const fetchRecipes = async () => {
     try {
       setLoading(true);
@@ -113,75 +110,67 @@ const Recipes = () => {
 
       setError(
         error.response?.data?.message ||
-          "Failed to load recipes. Please try again."
+          "Failed to load recipes. Please try again.",
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // ==========================================
   // FETCH WHEN FILTER / PAGE CHANGES
-  // ==========================================
+
   useEffect(() => {
     fetchRecipes();
   }, [page, search, category]);
 
-  // ==========================================
   // SEARCH
-  // ==========================================
+
   const handleSearch = (e) => {
     setSearch(e.target.value);
     setPage(1);
   };
 
-  // ==========================================
   // CATEGORY
-  // ==========================================
+
   const handleCategory = (e) => {
     setCategory(e.target.value);
     setPage(1);
   };
 
-  // ==========================================
   // CLEAR FILTERS
-  // ==========================================
+
   const clearFilters = () => {
     setSearch("");
     setCategory("");
     setPage(1);
   };
 
-  // ==========================================
   // PREVIOUS PAGE
-  // ==========================================
+
   const handlePrevious = () => {
     if (page > 1) {
       setPage((previousPage) => previousPage - 1);
     }
   };
 
-  // ==========================================
   // NEXT PAGE
-  // ==========================================
+
   const handleNext = () => {
     if (page < totalPages) {
       setPage((previousPage) => previousPage + 1);
     }
   };
 
-  // ==========================================
   // IMAGE ERROR
-  // ==========================================
+
   const handleImageError = (e) => {
     if (e.currentTarget.src !== fallbackImage) {
       e.currentTarget.src = fallbackImage;
     }
   };
 
-  // ==========================================
   // LOADING SKELETON
-  // ==========================================
+
   const RecipeSkeleton = () => (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
       {/* Image skeleton */}
@@ -201,15 +190,10 @@ const Recipes = () => {
     </div>
   );
 
-  // ==========================================
-  // RENDER
-  // ==========================================
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* =====================================
-          HERO
-      ====================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700">
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-linear-to-br from-orange-500 via-orange-600 to-orange-700">
         <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/10" />
 
         <div className="absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-white/10" />
@@ -234,13 +218,9 @@ const Recipes = () => {
         </div>
       </section>
 
-      {/* =====================================
-          MAIN CONTENT
-      ====================================== */}
+      {/* MAIN CONTENT */}
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        {/* =====================================
-            SEARCH & FILTER
-        ====================================== */}
+        {/* SEARCH & FILTER */}
         <div className="relative z-10 -mt-20 mb-10 rounded-2xl border border-gray-100 bg-white p-4 shadow-xl sm:p-6">
           <div className="grid gap-4 md:grid-cols-[1fr_240px_auto]">
             {/* Search */}
@@ -318,9 +298,7 @@ const Recipes = () => {
           )}
         </div>
 
-        {/* =====================================
-            SECTION HEADER
-        ====================================== */}
+        {/* SECTION HEADER */}
         <div className="mb-7 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-orange-500">
@@ -339,9 +317,7 @@ const Recipes = () => {
           )}
         </div>
 
-        {/* =====================================
-            ERROR
-        ====================================== */}
+        {/* ERROR */}
         {error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-xl">
@@ -361,9 +337,7 @@ const Recipes = () => {
           </div>
         )}
 
-        {/* =====================================
-            LOADING
-        ====================================== */}
+        {/* LOADING */}
         {loading && !error && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: limit }).map((_, index) => (
@@ -372,9 +346,7 @@ const Recipes = () => {
           </div>
         )}
 
-        {/* =====================================
-            RECIPES
-        ====================================== */}
+        {/* RECIPES */}
         {!loading && !error && (
           <>
             {recipes.length === 0 ? (
@@ -408,9 +380,7 @@ const Recipes = () => {
                     key={recipe._id}
                     className="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
-                    {/* =================================
-                        IMAGE
-                    ================================= */}
+                    {/* IMAGE */}
                     <div className="relative h-56 overflow-hidden bg-gray-100">
                       <img
                         src={getRecipeImage(recipe)}
@@ -426,7 +396,7 @@ const Recipes = () => {
                       />
 
                       {/* Dark overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-70" />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-70" />
 
                       {/* Category */}
                       {recipe.category && (
@@ -443,9 +413,7 @@ const Recipes = () => {
                       )}
                     </div>
 
-                    {/* =================================
-                        CONTENT
-                    ================================= */}
+                    {/* CONTENT */}
                     <div className="p-5">
                       <h3 className="line-clamp-2 text-xl font-bold text-gray-900 transition group-hover:text-orange-600">
                         {recipe.title}
@@ -495,9 +463,7 @@ const Recipes = () => {
           </>
         )}
 
-        {/* =====================================
-            PAGINATION
-        ====================================== */}
+        {/* PAGINATION */}
         {!loading && !error && recipes.length > 0 && totalPages > 1 && (
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {/* Previous */}

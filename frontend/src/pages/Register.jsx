@@ -59,9 +59,7 @@ const Register = () => {
 
       const response = await api.post("/users/register", formData);
 
-      setMessage(
-        response.data.message || "Registration successful!"
-      );
+      setMessage(response.data.message || "Registration successful!");
 
       setFormData({
         name: "",
@@ -76,7 +74,7 @@ const Register = () => {
     } catch (error) {
       setError(
         error.response?.data?.message ||
-          "Registration failed. Please try again."
+          "Registration failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -84,11 +82,10 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-orange-50 via-white to-orange-100 px-4 py-10 sm:py-16">
+    <div className="min-h-[calc(100vh-64px)] bg-linear-to-br from-orange-50 via-white to-orange-100 px-4 py-10 sm:py-16">
       <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl md:grid-cols-2">
-
         {/* Left Side */}
-        <div className="hidden bg-gradient-to-br from-orange-500 to-orange-700 p-10 text-white md:flex md:flex-col md:justify-center">
+        <div className="hidden bg-linear-to-br from-orange-500 to-orange-700 p-10 text-white md:flex md:flex-col md:justify-center">
           <div className="max-w-md">
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 text-3xl backdrop-blur-sm">
               🍳
@@ -99,8 +96,8 @@ const Register = () => {
             </h1>
 
             <p className="mt-5 text-lg leading-8 text-orange-50">
-              Create your account, share your favorite recipes,
-              discover new dishes, and inspire other food lovers.
+              Create your account, share your favorite recipes, discover new
+              dishes, and inspire other food lovers.
             </p>
 
             <div className="mt-8 space-y-4">
@@ -130,16 +127,13 @@ const Register = () => {
 
         {/* Right Side */}
         <div className="p-6 sm:p-10 lg:p-12">
-
           {/* Header */}
           <div className="mb-8 text-center md:text-left">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100 text-2xl md:mx-0">
               👨‍🍳
             </div>
 
-            <h2 className="text-3xl font-bold text-gray-900">
-              Create Account
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
 
             <p className="mt-2 text-gray-500">
               Start sharing your delicious recipes
@@ -161,7 +155,6 @@ const Register = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-
             {/* Name */}
             <div>
               <label
@@ -248,17 +241,9 @@ const Register = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-orange-500"
-                  aria-label={
-                    showPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <FiEyeOff size={19} />
-                  ) : (
-                    <FiEye size={19} />
-                  )}
+                  {showPassword ? <FiEyeOff size={19} /> : <FiEye size={19} />}
                 </button>
               </div>
 
@@ -271,7 +256,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+              className="flex w-full items-center justify-center rounded-xl bg-linear-to-r from-orange-500 to-orange-600 px-5 py-3.5 font-semibold text-white shadow-lg shadow-orange-200 transition hover:-translate-y-0.5 hover:from-orange-600 hover:to-orange-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
             >
               {loading ? (
                 <>
@@ -297,8 +282,7 @@ const Register = () => {
 
           {/* Bottom */}
           <p className="mt-6 text-center text-xs text-gray-400">
-            By creating an account, you agree to our terms and
-            privacy policy.
+            By creating an account, you agree to our terms and privacy policy.
           </p>
         </div>
       </div>
@@ -307,4 +291,3 @@ const Register = () => {
 };
 
 export default Register;
-
