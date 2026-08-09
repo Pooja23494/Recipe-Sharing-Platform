@@ -1,9 +1,7 @@
 import Recipe from "../models/Recipe.js";
 import cloudinary from "../config/cloudinary.js";
 
-// ==========================================
 // UPLOAD IMAGE TO CLOUDINARY
-// ==========================================
 
 const uploadToCloudinary = (fileBuffer) => {
   return new Promise((resolve, reject) => {
@@ -25,9 +23,7 @@ const uploadToCloudinary = (fileBuffer) => {
   });
 };
 
-// ==========================================
 // CONVERT FIELD TO ARRAY
-// ==========================================
 
 const convertToArray = (value) => {
   if (Array.isArray(value)) {
@@ -56,17 +52,13 @@ const convertToArray = (value) => {
     .filter(Boolean);
 };
 
-// ==========================================
 // CREATE RECIPE
-// ==========================================
 
 const createRecipe = async (req, res) => {
   try {
     const { title, description, ingredients, steps, category } = req.body;
 
-    // ========================================
     // VALIDATION
-    // ========================================
 
     if (!title || !description || !ingredients || !steps || !category) {
       return res.status(400).json({
@@ -74,9 +66,7 @@ const createRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // CONVERT TO ARRAYS
-    // ========================================
 
     const ingredientsArray = convertToArray(ingredients);
 
@@ -94,9 +84,7 @@ const createRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // UPLOAD IMAGE TO CLOUDINARY
-    // ========================================
 
     let image = "";
 
@@ -114,9 +102,7 @@ const createRecipe = async (req, res) => {
       console.log("CLOUDINARY IMAGE:", image);
     }
 
-    // ========================================
     // CREATE RECIPE
-    // ========================================
 
     const recipe = await Recipe.create({
       title: title.trim(),
@@ -134,9 +120,7 @@ const createRecipe = async (req, res) => {
       createdBy: req.user._id,
     });
 
-    // ========================================
     // RESPONSE
-    // ========================================
 
     res.status(201).json({
       message: "Recipe created successfully",
@@ -151,10 +135,8 @@ const createRecipe = async (req, res) => {
   }
 };
 
-// ==========================================
 // GET RECIPES
 // SEARCH + CATEGORY + PAGINATION
-// ==========================================
 
 const getRecipes = async (req, res) => {
   try {
@@ -168,9 +150,7 @@ const getRecipes = async (req, res) => {
 
     const filter = {};
 
-    // ========================================
     // SEARCH
-    // ========================================
 
     if (search) {
       filter.$or = [
@@ -189,9 +169,7 @@ const getRecipes = async (req, res) => {
       ];
     }
 
-    // ========================================
     // CATEGORY
-    // ========================================
 
     if (category) {
       filter.category = {
@@ -200,15 +178,11 @@ const getRecipes = async (req, res) => {
       };
     }
 
-    // ========================================
     // TOTAL
-    // ========================================
 
     const totalRecipes = await Recipe.countDocuments(filter);
 
-    // ========================================
     // RECIPES
-    // ========================================
 
     const recipes = await Recipe.find(filter)
       .populate("createdBy", "name email")
@@ -218,9 +192,7 @@ const getRecipes = async (req, res) => {
       .skip(skip)
       .limit(limitNumber);
 
-    // ========================================
     // TOTAL PAGES
-    // ========================================
 
     const totalPages = Math.ceil(totalRecipes / limitNumber);
 
@@ -241,9 +213,7 @@ const getRecipes = async (req, res) => {
   }
 };
 
-// ==========================================
 // GET SINGLE RECIPE
-// ==========================================
 
 const getRecipeById = async (req, res) => {
   try {
@@ -272,9 +242,7 @@ const getRecipeById = async (req, res) => {
   }
 };
 
-// ==========================================
 // UPDATE RECIPE
-// ==========================================
 
 const updateRecipe = async (req, res) => {
   try {
@@ -292,9 +260,7 @@ const updateRecipe = async (req, res) => {
 
     console.log("UPDATE RECIPE FILE:", req.file);
 
-    // ========================================
     // FIND RECIPE
-    // ========================================
 
     const recipe = await Recipe.findById(id);
 
@@ -304,9 +270,7 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // CHECK OWNER
-    // ========================================
 
     if (recipe.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
@@ -314,9 +278,7 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // VALIDATION
-    // ========================================
 
     if (!title || !title.trim()) {
       return res.status(400).json({
@@ -336,9 +298,7 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // INGREDIENTS
-    // ========================================
 
     let ingredientsArray = recipe.ingredients;
 
@@ -346,9 +306,7 @@ const updateRecipe = async (req, res) => {
       ingredientsArray = convertToArray(ingredients);
     }
 
-    // ========================================
     // STEPS
-    // ========================================
 
     let stepsArray = recipe.steps;
 
@@ -356,9 +314,7 @@ const updateRecipe = async (req, res) => {
       stepsArray = convertToArray(steps);
     }
 
-    // ========================================
     // VALIDATE ARRAYS
-    // ========================================
 
     if (ingredientsArray.length === 0) {
       return res.status(400).json({
@@ -372,9 +328,7 @@ const updateRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // UPDATE TEXT
-    // ========================================
 
     recipe.title = title.trim();
 
@@ -386,9 +340,7 @@ const updateRecipe = async (req, res) => {
 
     recipe.category = category.trim();
 
-    // ========================================
     // UPDATE IMAGE
-    // ========================================
 
     if (req.file) {
       console.log("Uploading updated image...");
@@ -400,15 +352,11 @@ const updateRecipe = async (req, res) => {
       console.log("UPDATED CLOUDINARY IMAGE:", recipe.image);
     }
 
-    // ========================================
     // SAVE
-    // ========================================
 
     const updatedRecipe = await recipe.save();
 
-    // ========================================
     // RESPONSE
-    // ========================================
 
     res.status(200).json({
       message: "Recipe updated successfully",
@@ -423,9 +371,7 @@ const updateRecipe = async (req, res) => {
   }
 };
 
-// ==========================================
 // DELETE RECIPE
-// ==========================================
 
 const deleteRecipe = async (req, res) => {
   try {
@@ -439,9 +385,7 @@ const deleteRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // CHECK OWNER
-    // ========================================
 
     if (recipe.createdBy.toString() !== req.user._id.toString()) {
       return res.status(403).json({
@@ -449,9 +393,7 @@ const deleteRecipe = async (req, res) => {
       });
     }
 
-    // ========================================
     // DELETE
-    // ========================================
 
     await Recipe.findByIdAndDelete(id);
 
@@ -467,9 +409,7 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
-// ==========================================
 // GET MY RECIPES
-// ==========================================
 
 const getMyRecipes = async (req, res) => {
   try {
@@ -491,10 +431,6 @@ const getMyRecipes = async (req, res) => {
     });
   }
 };
-
-// ==========================================
-// EXPORT
-// ==========================================
 
 export default {
   createRecipe,
