@@ -34,7 +34,8 @@ const Recipes = () => {
   const API_BASE_URL =
     import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-  const SERVER_URL = API_BASE_URL.replace(/\/api\/?$/, "");
+  const fallback =
+    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80";
 
   const getRecipeImage = (recipe) => {
     const fallback =
@@ -55,7 +56,7 @@ const Recipes = () => {
       return fallback;
     }
 
-    // External URL / Cloudinary / data URL
+    // Cloudinary / external URL
     if (
       image.startsWith("http://") ||
       image.startsWith("https://") ||
@@ -64,12 +65,14 @@ const Recipes = () => {
       return image;
     }
 
-    // Backend image path
+    // Old backend image path
+    const serverUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
     if (image.startsWith("/")) {
-      return `${SERVER_URL}${image}`;
+      return `${serverUrl}${image}`;
     }
 
-    return `${SERVER_URL}/${image}`;
+    return `${serverUrl}/${image}`;
   };
 
   // ==========================================
